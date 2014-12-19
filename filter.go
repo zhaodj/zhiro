@@ -8,6 +8,10 @@ type Filter interface {
 	Handle(w http.ResponseWriter, req *http.Request, val string) bool
 }
 
+type pathProcessor struct {
+	paths map[string][]string
+}
+
 type AnonFilter struct {
 }
 
