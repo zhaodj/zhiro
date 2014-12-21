@@ -7,6 +7,11 @@ import (
 type Zhiro struct {
 	denyFunc http.HandlerFunc
 	manager  *ChainManager
+    realm Realm
+}
+
+type Realm interface{
+    GetAuthorization(princ Principal)Authorization
 }
 
 func NewZhiro(chain map[string]string) *Zhiro {

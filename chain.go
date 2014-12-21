@@ -5,13 +5,16 @@ import (
 )
 
 type ChainManager struct {
+    names []string
 	filters map[string]Filter
+    filterChains map[string]*FilterList
+    matcher Matcher
 }
 
 func NewChainManager() *ChainManager {
-	return &ChainManager{map[string]Filter{
+	return &ChainManager{[]string{},map[string]Filter{
 		"anon": &AnonFilter{},
-	}}
+	},map[string]*FilterList{},&AntMatcher{}}
 }
 
 func split(line string, delimiter uint8, beginQuote uint8, endQuote uint8, retainQuote bool, trim bool) []string {
@@ -73,8 +76,21 @@ func parseNameConfig(token string) []string {
 	return []string{name, config}
 }
 
+func (m *ChainManager) ensureChain(name string) *FilterList{
+    if v,ok := m.filterChains[name];ok{
+        return v
+    }
+    v := &FilterList{name,[]Filter{}}
+    m.filterChains[name]=v
+    m.names = append(m.names,name)
+    return v
+}
+
 func (m *ChainManager) addToChain(url string, filterName string, chainConf string) {
 	filter := m.filters[filterName]
+    filter.ProcessPathConfig(url, chainConf)
+    chain := m.ensureChain(url)
+    chain.Filters = append(chain.Filters, filter)
 }
 
 func (m *ChainManager) CreateChain(url string, chainDef string) {
